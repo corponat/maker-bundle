@@ -3,6 +3,7 @@
 namespace <?= $namespace; ?>;
 
 <?= $use_statements; ?>
+use App\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<<?= $entity_class_name; ?>>

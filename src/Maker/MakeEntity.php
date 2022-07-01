@@ -429,6 +429,8 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
 
             // 0 is the default value given in \Doctrine\DBAL\Schema\Column::$_scale
             $data['scale'] = $io->ask('Scale (number of decimals to store: 100.00 would be 2)', 0, [Validator::class, 'validateScale']);
+        } elseif (in_array($type, ['bit', 'bit varying'])) {
+            $data['length'] = (int)$io->ask('Bits count', 0);
         }
 
         if ($io->confirm('Can this field be null in the database (nullable)', false)) {
@@ -645,6 +647,10 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                     $relation->getOwningProperty(),
                     $relation->getOwningClass()
                 ));
+                if (!$relation->isNullable()) {
+                    $onDeleteCascade = $io->confirm(sprintf('Do you want to cascade delete inverse <comment>%s</comment> objects (cascade delete)?', $relation->getInverseClass()), true);
+                    $relation->setOnDeleteCascade($onDeleteCascade);
+                }
 
                 $askInverseSide($relation);
                 if ($relation->getMapInverseRelation()) {
@@ -691,6 +697,10 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                     $relation->getOwningProperty(),
                     $relation->getOwningClass()
                 ));
+                if (!$relation->isNullable()) {
+                    $onDeleteCascade = $io->confirm(sprintf('Do you want to cascade delete inverse <comment>%s</comment> objects (cascade delete)?', $relation->getInverseClass()), true);
+                    $relation->setOnDeleteCascade($onDeleteCascade);
+                }
 
                 if (!$relation->isNullable()) {
                     $relation->setOrphanRemoval($askOrphanRemoval(
@@ -734,6 +744,10 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                     $relation->getOwningProperty(),
                     $relation->getOwningClass()
                 ));
+                if (!$relation->isNullable()) {
+                    $onDeleteCascade = $io->confirm(sprintf('Do you want to cascade delete inverse <comment>%s</comment> objects (cascade delete)?', $relation->getInverseClass()), true);
+                    $relation->setOnDeleteCascade($onDeleteCascade);
+                }
 
                 $askInverseSide($relation);
                 if ($relation->getMapInverseRelation()) {

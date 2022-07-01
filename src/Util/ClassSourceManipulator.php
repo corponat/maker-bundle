@@ -477,7 +477,11 @@ final class ClassSourceManipulator
         ];
 
         if (!$relation->isNullable() && $relation->isOwning()) {
-            $attributes[] = $this->buildAttributeNode(JoinColumn::class, ['nullable' => false], 'ORM');
+            $config['nullable'] = false;
+            if ($relation->isOnDeleteCascade()) {
+                $config['onDelete'] = 'cascade';
+            }
+            $attributes[] = $this->buildAttributeNode(JoinColumn::class, $config, 'ORM');
         }
 
         $this->addProperty(

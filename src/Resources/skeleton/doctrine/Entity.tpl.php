@@ -36,11 +36,11 @@ class <?= $class_name."\n" ?>
 {
     <?php if (!$doctrine_use_attributes): ?>/**
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy: ['IDENTITY'])
+     * @ORM\GeneratedValue(strategy: 'IDENTITY')
      * @ORM\Column(type="integer")
      */
     <?php else: ?>#[ORM\Id]
-    #[ORM\GeneratedValue(strategy: ['IDENTITY'])]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer')]
     <?php endif ?>private $id;
 

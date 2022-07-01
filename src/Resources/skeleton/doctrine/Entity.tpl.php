@@ -40,7 +40,7 @@ class <?= $class_name."\n" ?>
      * @ORM\Column(type="integer")
      */
     <?php else: ?>#[ORM\Id]
-    #[ORM\GeneratedValue]
+    #[ORM\GeneratedValue(strategy: ['IDENTITY'])]
     #[ORM\Column(type: 'integer')]
     <?php endif ?>private $id;
 

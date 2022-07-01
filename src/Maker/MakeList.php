@@ -62,7 +62,6 @@ class MakeList extends AbstractMaker
             $argument = $command->getDefinition()->getArgument('entity-class');
             $question = new Question($argument->getDescription());
 
-            $question->setAutocompleterValues($classes = $this->namespaces(__DIR__ . DIRECTORY_SEPARATOR . '../Enums/'));
             $value = $io->askQuestion($question);
 
             $input->setArgument('entity-class', $value);
@@ -263,41 +262,5 @@ class MakeList extends AbstractMaker
         }
 
         return LegacyInflector::singularize($word);
-    }
-
-    protected function namespaces($target, $root = null)
-    {
-        if (!$root) {
-            $root = $target;
-        }
-        if (is_dir($target)) {
-            $files = glob($target . '*', GLOB_MARK); //GLOB_MARK adds a slash to directories returned
-
-            $dirs = [];
-
-            $directoryExists = false;
-            foreach ($files as $file) {
-                if (preg_match('/.*Interface.*/u', $file)) {
-                    continue;
-                }
-                $findDirs = $this->namespaces($file, $root);
-                $directoryExists = $directoryExists || is_array($findDirs);
-
-                if (is_array($findDirs)) {
-                    $dirs = array_merge($dirs, $findDirs);
-                } else {
-                    $replaceString = str_replace('/', '\\/', realpath($root)) . '\\' . DIRECTORY_SEPARATOR;
-                    $namespace = preg_replace('/' . $replaceString .'/u', '', realpath($target . $findDirs));
-                    $namespace = preg_replace('/\.php/', '', $namespace);
-                    $namespace = preg_replace('/\//', '\\', $namespace);
-
-                    $dirs [] = $namespace;
-                }
-            }
-
-            return $dirs;
-        }
-
-        return preg_replace('/^.*?([^\/]*)$/', '\1', $target);
     }
 }

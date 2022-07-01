@@ -150,8 +150,8 @@ final class MakeCrud extends AbstractMaker
             $controllerClassDetails->getRelativeNameWithoutSuffix()
         );
 
-        $routeName = Str::asRouteName($path ?: $controllerClassDetails->getRelativeNameWithoutSuffix());
-        $templatesPath = Str::asFilePath($path ?: $controllerClassDetails->getRelativeNameWithoutSuffix());
+        $routeName = Str::asRouteName($path);
+        $templatesPath = Str::asFilePath($path);
 
         $generator->generateController(
             $controllerClassDetails->getFullName(),
@@ -161,7 +161,7 @@ final class MakeCrud extends AbstractMaker
                 'entity_class_name'        => $entityClassDetails->getShortName(),
                 'form_full_class_name'     => $formClassDetails->getFullName(),
                 'form_class_name'          => $formClassDetails->getShortName(),
-                'route_path'               => Str::asRoutePath($path ?: $controllerClassDetails->getRelativeNameWithoutSuffix()),
+                'route_path'               => Str::asRoutePath($path),
                 'route_name'               => $routeName,
                 'templates_path'           => $templatesPath,
                 'entity_var_plural'        => $entityVarPlural,
@@ -213,7 +213,7 @@ final class MakeCrud extends AbstractMaker
 
         $this->writeSuccessMessage($io);
 
-        $io->text(sprintf('Next: Check your new CRUD by going to <fg=yellow>%s/</>', Str::asRoutePath($controllerClassDetails->getRelativeNameWithoutSuffix())));
+        $io->text(sprintf('Next: Check your new CRUD by going to <fg=yellow>%s/</>', Str::asRoutePath($path)));
     }
 
     /**

@@ -31,6 +31,10 @@
                 <tag name="maker.command" />
             </service>
 
+            <service id="maker.maker.make_list" class="Symfony\Bundle\MakerBundle\Maker\MakeList">
+                <tag name="maker.command" />
+            </service>
+
             <service id="maker.maker.make_docker_database" class="Symfony\Bundle\MakerBundle\Maker\MakeDockerDatabase">
                 <argument type="service" id="maker.file_manager" />
                 <tag name="maker.command" />

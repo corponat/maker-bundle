@@ -1,3 +1,16 @@
+<?php
+
+/**
+ * @var $namespace
+ * @var $bounded_full_class_name
+ * @var $field_type_use_statements
+ * @var $constraint_use_statements
+ * @var $class_name
+ * @var $form_fields
+ * @var $bounded_class_name
+ */
+
+?>
 <?= "<?php\n" ?>
 
 namespace <?= $namespace ?>;
@@ -17,10 +30,16 @@ use <?= $className ?>;
 
 class <?= $class_name ?> extends AbstractType
 {
+    public function getBlockPrefix(): string
+    {
+        return '';
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
 <?php foreach ($form_fields as $form_field => $typeOptions): ?>
+<?php $form_field = strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $form_field)); ?>
 <?php if (null === $typeOptions['type'] && !$typeOptions['options_code']): ?>
             ->add('<?= $form_field ?>')
 <?php elseif (null !== $typeOptions['type'] && !$typeOptions['options_code']): ?>
@@ -38,9 +57,12 @@ class <?= $class_name ?> extends AbstractType
     {
         $resolver->setDefaults([
 <?php if ($bounded_full_class_name): ?>
-            'data_class' => <?= $bounded_class_name ?>::class,
+            'data_class'         => <?= $bounded_class_name ?>::class,
+            'csrf_protection'    => false,
+            'allow_extra_fields' => true,
 <?php else: ?>
-            // Configure your form options here
+            'csrf_protection'    => false,
+            'allow_extra_fields' => true,
 <?php endif ?>
         ]);
     }

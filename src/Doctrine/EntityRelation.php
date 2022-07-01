@@ -39,6 +39,8 @@ final class EntityRelation
 
     private $mapInverseRelation = true;
 
+    private $onDeleteCascade = false;
+
     public function __construct(string $type, string $owningClass, string $inverseClass)
     {
         if (!\in_array($type, self::getValidRelationTypes())) {
@@ -99,6 +101,7 @@ final class EntityRelation
                     ->setTargetPropertyName($this->inverseProperty)
                     ->setIsNullable($this->isNullable)
                     ->setIsSelfReferencing($this->isSelfReferencing)
+                    ->setOnDeleteCascade($this->onDeleteCascade)
                     ->setMapInverseRelation($this->mapInverseRelation)
                 ;
                 break;
@@ -108,6 +111,7 @@ final class EntityRelation
                     ->setTargetClassName($this->inverseClass)
                     ->setTargetPropertyName($this->inverseProperty)
                     ->setIsOwning(true)->setMapInverseRelation($this->mapInverseRelation)
+                    ->setOnDeleteCascade($this->onDeleteCascade)
                     ->setIsSelfReferencing($this->isSelfReferencing)
                 ;
                 break;
@@ -118,6 +122,7 @@ final class EntityRelation
                     ->setTargetPropertyName($this->inverseProperty)
                     ->setIsNullable($this->isNullable)
                     ->setIsOwning(true)
+                    ->setOnDeleteCascade($this->onDeleteCascade)
                     ->setIsSelfReferencing($this->isSelfReferencing)
                     ->setMapInverseRelation($this->mapInverseRelation)
                 ;
@@ -136,6 +141,7 @@ final class EntityRelation
                     ->setTargetClassName($this->owningClass)
                     ->setTargetPropertyName($this->owningProperty)
                     ->setOrphanRemoval($this->orphanRemoval)
+                    ->setOnDeleteCascade($this->onDeleteCascade)
                     ->setIsSelfReferencing($this->isSelfReferencing)
                 ;
                 break;
@@ -145,6 +151,7 @@ final class EntityRelation
                     ->setTargetClassName($this->owningClass)
                     ->setTargetPropertyName($this->owningProperty)
                     ->setIsOwning(false)
+                    ->setOnDeleteCascade($this->onDeleteCascade)
                     ->setIsSelfReferencing($this->isSelfReferencing)
                 ;
                 break;
@@ -155,6 +162,7 @@ final class EntityRelation
                     ->setTargetPropertyName($this->owningProperty)
                     ->setIsNullable($this->isNullable)
                     ->setIsOwning(false)
+                    ->setOnDeleteCascade($this->onDeleteCascade)
                     ->setIsSelfReferencing($this->isSelfReferencing)
                 ;
                 break;
@@ -210,5 +218,21 @@ final class EntityRelation
         }
 
         $this->mapInverseRelation = $mapInverseRelation;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOnDeleteCascade(): bool
+    {
+        return $this->onDeleteCascade;
+    }
+
+    /**
+     * @param bool $onDeleteCascade
+     */
+    public function setOnDeleteCascade(bool $onDeleteCascade): void
+    {
+        $this->onDeleteCascade = $onDeleteCascade;
     }
 }

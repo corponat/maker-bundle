@@ -3,9 +3,7 @@
 namespace <?= $namespace; ?>;
 
 use <?= $entity_full_class_name; ?>;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
+use App\Repository\ServiceEntityRepository;
 use <?= $doctrine_registry_class; ?>;
 <?= $with_password_upgrade ? "use Symfony\Component\Security\Core\Exception\UnsupportedUserException;\n" : '' ?>
 <?= ($with_password_upgrade && str_contains($password_upgrade_user_interface->getFullName(), 'Password')) ? sprintf("use %s;\n", $password_upgrade_user_interface->getFullName()) : null ?>
@@ -25,11 +23,7 @@ class <?= $class_name; ?> extends ServiceEntityRepository<?= $with_password_upgr
         parent::__construct($registry, <?= $entity_class_name; ?>::class);
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function add(<?= $entity_class_name ?> $entity, bool $flush = true): void
+    public function add(<?= $entity_class_name ?> $entity, bool $flush = false): void
     {
         $this->_em->persist($entity);
         if ($flush) {
@@ -37,11 +31,7 @@ class <?= $class_name; ?> extends ServiceEntityRepository<?= $with_password_upgr
         }
     }
 
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
-    public function remove(<?= $entity_class_name ?> $entity, bool $flush = true): void
+    public function remove(<?= $entity_class_name ?> $entity, bool $flush = false): void
     {
         $this->_em->remove($entity);
         if ($flush) {

@@ -36,7 +36,7 @@ class <?= $class_name."\n" ?>
 {
     <?php if (!$doctrine_use_attributes): ?>/**
      * @ORM\Id
-     * @ORM\GeneratedValue
+     * @ORM\GeneratedValue(strategy: ['IDENTITY'])
      * @ORM\Column(type="integer")
      */
     <?php else: ?>#[ORM\Id]

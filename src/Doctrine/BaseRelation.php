@@ -23,6 +23,7 @@ abstract class BaseRelation
     private $isSelfReferencing = false;
     private $mapInverseRelation = true;
     private $avoidSetter = false;
+    private $onDeleteCascade = false;
 
     abstract public function isOwning(): bool;
 
@@ -112,6 +113,21 @@ abstract class BaseRelation
     {
         $this->customReturnType = $customReturnType;
         $this->isCustomReturnTypeNullable = $isNullable;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOnDeleteCascade(): bool
+    {
+        return $this->onDeleteCascade;
+    }
+
+    public function setOnDeleteCascade(bool $onDeleteCascade): self
+    {
+        $this->onDeleteCascade = $onDeleteCascade;
 
         return $this;
     }

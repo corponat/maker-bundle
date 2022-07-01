@@ -559,13 +559,15 @@ final class ClassSourceManipulator
             ];
         }
 
-        if (!$relation->isNullable() && $relation->isOwning()) {
+        if ($relation->isOwning() && !$relation->isNullable()) {
+            $config['nullable'] = false;
+            if ($relation->isOnDeleteCascade()) {
+                $config['onDelete'] = 'cascade';
+            }
             if (!$this->useAttributesForDoctrineMapping) {
-                $annotations[] = $this->buildAnnotationLine('@ORM\\JoinColumn', [
-                    'nullable' => false,
-                ]);
+                $annotations[] = $this->buildAnnotationLine('@ORM\\JoinColumn', $config);
             } else {
-                $attributes[] = $this->buildAttributeNode(JoinColumn::class, ['nullable' => false], 'ORM');
+                $attributes[] = $this->buildAttributeNode(JoinColumn::class, $config, 'ORM');
             }
         }
 

@@ -32,6 +32,7 @@ final class EntityRelation
         private string $type,
         private string $owningClass,
         private string $inverseClass,
+        private $onDeleteCascade = false
     ) {
         if (!\in_array($type, self::getValidRelationTypes())) {
             throw new \Exception(sprintf('Invalid relation type "%s"', $type));
@@ -89,6 +90,7 @@ final class EntityRelation
                 mapInverseRelation: $this->mapInverseRelation,
                 isOwning: true,
                 isNullable: $this->isNullable,
+                onDeleteCascade: $this->onDeleteCascade
             )),
             self::MANY_TO_MANY => (new RelationManyToMany(
                 propertyName: $this->owningProperty,
@@ -97,6 +99,7 @@ final class EntityRelation
                 isSelfReferencing: $this->isSelfReferencing,
                 mapInverseRelation: $this->mapInverseRelation,
                 isOwning: true,
+                onDeleteCascade: $this->onDeleteCascade
             )),
             self::ONE_TO_ONE => (new RelationOneToOne(
                 propertyName: $this->owningProperty,
@@ -106,6 +109,7 @@ final class EntityRelation
                 mapInverseRelation: $this->mapInverseRelation,
                 isOwning: true,
                 isNullable: $this->isNullable,
+                onDeleteCascade: $this->onDeleteCascade
             )),
             default => throw new \InvalidArgumentException('Invalid type'),
         };
@@ -120,12 +124,14 @@ final class EntityRelation
                 targetPropertyName: $this->owningProperty,
                 isSelfReferencing: $this->isSelfReferencing,
                 orphanRemoval: $this->orphanRemoval,
+                onDeleteCascade: $this->onDeleteCascade,
             )),
             self::MANY_TO_MANY => (new RelationManyToMany(
                 propertyName: $this->inverseProperty,
                 targetClassName: $this->owningClass,
                 targetPropertyName: $this->owningProperty,
-                isSelfReferencing: $this->isSelfReferencing
+                isSelfReferencing: $this->isSelfReferencing,
+                onDeleteCascade: $this->onDeleteCascade,
             )),
             self::ONE_TO_ONE => (new RelationOneToOne(
                 propertyName: $this->inverseProperty,
@@ -133,6 +139,7 @@ final class EntityRelation
                 targetPropertyName: $this->owningProperty,
                 isSelfReferencing: $this->isSelfReferencing,
                 isNullable: $this->isNullable,
+                onDeleteCascade: $this->onDeleteCascade,
             )),
             default => throw new \InvalidArgumentException('Invalid type'),
         };
@@ -185,5 +192,21 @@ final class EntityRelation
         }
 
         $this->mapInverseRelation = $mapInverseRelation;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOnDeleteCascade(): bool
+    {
+        return $this->onDeleteCascade;
+    }
+
+    /**
+     * @param bool $onDeleteCascade
+     */
+    public function setOnDeleteCascade(bool $onDeleteCascade): void
+    {
+        $this->onDeleteCascade = $onDeleteCascade;
     }
 }

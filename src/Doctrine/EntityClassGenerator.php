@@ -65,11 +65,13 @@ final class EntityClassGenerator
             'doctrine/Entity.tpl.php',
             [
                 'use_statements' => $useStatements,
+                'repository_full_class_name' => $repoClassDetails->getFullName(),
                 'repository_class_name' => $repoClassDetails->getShortName(),
                 'api_resource' => $apiResource,
                 'broadcast' => $broadcast,
                 'should_escape_table_name' => $this->doctrineHelper->isKeyword($tableName),
                 'table_name' => $tableName,
+                'doctrine_use_attributes' => $this->doctrineHelper->isDoctrineSupportingAttributes() && $this->doctrineHelper->doesClassUsesAttributes($entityClassDetails->getFullName()),
             ]
         );
 
@@ -117,10 +119,12 @@ final class EntityClassGenerator
             'doctrine/Repository.tpl.php',
             [
                 'use_statements' => $useStatements,
+                'entity_full_class_name' => $entityClass,
                 'entity_class_name' => $shortEntityClass,
                 'entity_alias' => $entityAlias,
                 'with_password_upgrade' => $withPasswordUpgrade,
                 'password_upgrade_user_interface' => $interfaceClassNameDetails,
+                'doctrine_registry_class' => $this->managerRegistryClassName,
                 'include_example_comments' => $includeExampleComments,
             ]
         );

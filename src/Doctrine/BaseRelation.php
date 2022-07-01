@@ -28,6 +28,7 @@ abstract class BaseRelation
         private bool $isOwning = false,
         private bool $orphanRemoval = false,
         private bool $isNullable = false,
+        private $onDeleteCascade = false
     ) {
     }
 
@@ -84,5 +85,13 @@ abstract class BaseRelation
     public function isNullable(): bool
     {
         return $this->isNullable;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isOnDeleteCascade(): bool
+    {
+        return $this->onDeleteCascade;
     }
 }

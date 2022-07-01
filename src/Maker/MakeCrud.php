@@ -11,6 +11,7 @@
 
 namespace Symfony\Bundle\MakerBundle\Maker;
 
+use App\Controller\AbstractRestController;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Common\Inflector\Inflector as LegacyInflector;
 use Doctrine\Inflector\InflectorFactory;
@@ -173,6 +174,40 @@ final class MakeCrud extends AbstractMaker
                 $repositoryVars
             )
         );
+
+        $constraintClasses = [];
+        $extraUseClasses = [];
+        $fieldTypeUseStatements = [];
+        $fields = [];
+        foreach ($entityDoctrineDetails->getFormFields() as $name => $fieldTypeOptions) {
+            $fieldTypeOptions = $fieldTypeOptions ?? ['type' => null, 'options_code' => null];
+
+            if (isset($fieldTypeOptions['type'])) {
+                $fieldTypeUseStatements[] = $fieldTypeOptions['type'];
+                $fieldTypeOptions['type'] = Str::getShortClassName($fieldTypeOptions['type']);
+            }
+
+            $fields[$name] = $fieldTypeOptions;
+        }
+
+        $mergedTypeUseStatements = array_unique(array_merge($fieldTypeUseStatements, $extraUseClasses));
+        sort($mergedTypeUseStatements);
+
+        if (!class_exists($formClassDetails->getFullName())) {
+            $generator->generateClass(
+                $formClassDetails->getFullName(),
+                'form/Type.tpl.php',
+                [
+                    'bounded_full_class_name'   => $entityClassDetails ? $entityClassDetails->getFullName() : null,
+                    'bounded_class_name'        => $entityClassDetails ? $entityClassDetails->getShortName() : null,
+                    'form_fields'               => $fields,
+                    'field_type_use_statements' => $mergedTypeUseStatements,
+                    'constraint_use_statements' => $constraintClasses,
+                ]
+            );
+        } else {
+            $io->text('<bg=yellow;fg=white> Класс типа уже существует! </>' . PHP_EOL);
+        }
 
         $generator->writeChanges();
 

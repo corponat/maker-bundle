@@ -169,7 +169,7 @@ class MakeList extends AbstractMaker
 
         $generator->generateClass(
             $constantClassDetails->getFullName(),
-            __DIR__ . '/Skeleton/Type/Type.tpl.php',
+            'type/Type.tpl.php',
             [
                 'constants' => $constants,
                 'labels'    => $labels,

@@ -7,11 +7,6 @@ use <?= $entity_full_class_name ?>;
 use <?= $form_full_class_name ?>;
 <?php if (isset($repository_full_class_name)): ?>
 use <?= $repository_full_class_name ?>;
-<?php if (!$generator->repositoryHasAddRemoveMethods($repository_full_class_name)) : ?>
-use Doctrine\ORM\EntityManagerInterface;
-<?php endif; ?>
-<?php else: ?>
-use Doctrine\ORM\EntityManagerInterface;
 <?php endif; ?>
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -29,12 +24,12 @@ class <?= $class_name ?> extends AbstractRestController
 <?php if (isset($repository_full_class_name)): ?>
     public function index(<?= $repository_class_name ?> $<?= $repository_var ?>)
     {
-        return $<?= $repository_var ?>->findAll();
+        return $<?= $repository_var ?>->createQueryBuilder('e');
     }
 <?php else: ?>
-    public function index(EntityManagerInterface $entityManager): Response
+    public function index(): Response
     {
-        $<?= $entity_var_plural ?> = $entityManager
+        $<?= $entity_var_plural ?> = $this->manager
             ->getRepository(<?= $entity_class_name ?>::class)
             ->findAll();
 
@@ -46,7 +41,7 @@ class <?= $class_name ?> extends AbstractRestController
 <?php if (isset($repository_full_class_name) && $generator->repositoryHasAddRemoveMethods($repository_full_class_name)) { ?>
     public function new(Request $request, <?= $repository_class_name ?> $<?= $repository_var ?>)
 <?php } else { ?>
-    public function new(Request $request, EntityManagerInterface $entityManager)
+    public function new(Request $request)
 <?php } ?>
     {
         $<?= $entity_var_singular ?> = new <?= $entity_class_name ?>();
@@ -59,8 +54,7 @@ class <?= $class_name ?> extends AbstractRestController
         }
 <?php } else { ?>
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($<?= $entity_var_singular ?>);
-            $entityManager->flush();
+            $this->manager->persist($<?= $entity_var_singular ?>);
 
             return $this->created($<?= $entity_var_singular ?>);
         }
@@ -83,7 +77,7 @@ class <?= $class_name ?> extends AbstractRestController
 <?php if (isset($repository_full_class_name) && $generator->repositoryHasAddRemoveMethods($repository_full_class_name)) { ?>
     public function edit(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>, <?= $repository_class_name ?> $<?= $repository_var ?>)
 <?php } else { ?>
-    public function edit(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>, EntityManagerInterface $entityManager)
+    public function edit(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>)
 <?php } ?>
     {
         $form = $this->createForm(<?= $form_class_name ?>::class, $<?= $entity_var_singular ?>, ['method' => 'PATCH']);
@@ -95,29 +89,24 @@ class <?= $class_name ?> extends AbstractRestController
         }
 <?php } else { ?>
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
+            $this->manager->persist($form->getData());
         }
 <?php } ?>
 
-<?php if ($use_render_form) { ?>
         return $form;
-<?php } else { ?>
-        return $form;
-<?php } ?>
     }
 
 <?= $generator->generateRouteForControllerMethod(sprintf('/{%s}', $entity_identifier), sprintf('%s_delete', $route_name), ['DELETE']) ?>
 <?php if (isset($repository_full_class_name) && $generator->repositoryHasAddRemoveMethods($repository_full_class_name)) { ?>
     public function delete(<?= $entity_class_name ?> $<?= $entity_var_singular ?>, <?= $repository_class_name ?> $<?= $repository_var ?>)
 <?php } else { ?>
-    public function delete(<?= $entity_class_name ?> $<?= $entity_var_singular ?>, EntityManagerInterface $entityManager)
+    public function delete(<?= $entity_class_name ?> $<?= $entity_var_singular ?>)
 <?php } ?>
     {
 <?php if (isset($repository_full_class_name) && $generator->repositoryHasAddRemoveMethods($repository_full_class_name)) { ?>
         $<?= $repository_var ?>->remove($<?= $entity_var_singular ?>);
 <?php } else { ?>
-        $entityManager->remove($<?= $entity_var_singular ?>);
-        $entityManager->flush();
+        $this->manager->remove($<?= $entity_var_singular ?>);
 <?php } ?>
 
         return [];

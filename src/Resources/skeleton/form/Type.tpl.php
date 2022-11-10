@@ -30,11 +30,6 @@ use <?= $className ?>;
 
 class <?= $class_name ?> extends AbstractType
 {
-    public function getBlockPrefix(): string
-    {
-        return '';
-    }
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -57,12 +52,7 @@ class <?= $class_name ?> extends AbstractType
     {
         $resolver->setDefaults([
 <?php if ($bounded_full_class_name): ?>
-            'data_class'         => <?= $bounded_class_name ?>::class,
-            'csrf_protection'    => false,
-            'allow_extra_fields' => true,
-<?php else: ?>
-            'csrf_protection'    => false,
-            'allow_extra_fields' => true,
+            'data_class' => <?= $bounded_class_name ?>::class,
 <?php endif ?>
         ]);
     }

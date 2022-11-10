@@ -32,6 +32,7 @@
             </service>
 
             <service id="maker.maker.make_list" class="Symfony\Bundle\MakerBundle\Maker\MakeList">
+                <argument type="service" id="maker.file_manager" />
                 <tag name="maker.command" />
             </service>
 

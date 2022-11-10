@@ -6,6 +6,7 @@ use Doctrine\Inflector\Inflector;
 use Doctrine\Inflector\InflectorFactory;
 use Symfony\Bundle\MakerBundle\ConsoleStyle;
 use Symfony\Bundle\MakerBundle\DependencyBuilder;
+use Symfony\Bundle\MakerBundle\FileManager;
 use Symfony\Bundle\MakerBundle\Generator;
 use Symfony\Bundle\MakerBundle\InputConfiguration;
 use Symfony\Component\Console\Command\Command;
@@ -22,12 +23,18 @@ class MakeList extends AbstractMaker
      * @var Inflector
      */
     private $inflector;
+    /**
+     * @var FileManager
+     */
+    private $fileManager;
 
-    public function __construct()
+    public function __construct(FileManager $fileManager)
     {
         if (class_exists(InflectorFactory::class)) {
             $this->inflector = InflectorFactory::create()->build();
         }
+
+        $this->fileManager = $fileManager;
     }
 
     /**
@@ -75,16 +82,29 @@ class MakeList extends AbstractMaker
             'Enums\\'
         );
 
+        $question = new Question('Use backed enum?', 'true');
+        $question->setAutocompleterValues(['true', 'false']);
+        $useValues = $io->askQuestion($question) === 'true';
+
         $constants = [];
         $cases = [];
         $labels = [];
         $class = $constantClassDetails->getFullName();
         if (class_exists($class)) {
             $cases = $class::cases();
-            $oldLabels = $class::getLabels();
+            $oldLabels = method_exists($class, 'getLabels') ? $class::getLabels() : [];
 
-            foreach ($cases as $case) {
-                $labels[$case->name] = $oldLabels[$case->name] ?? null;
+            if (is_subclass_of($class, \BackedEnum::class)) {
+                foreach ($cases as $case) {
+                    $labels[$case->name] = $oldLabels[$case->value] ?? null;
+                    $constants[$case->name] = $useValues ? $case->value : null;
+                }
+            } else {
+                $index = 1;
+                foreach ($cases as $case) {
+                    $labels[$case->name] = $oldLabels[$case->name] ?? null;
+                    $constants[$case->name] = $useValues ? $index++ : null;
+                }
             }
         }
 
@@ -93,46 +113,45 @@ class MakeList extends AbstractMaker
             $newConstant = $this->askForConstantName($io, $cases, $processedConstants);
             $newConstant = mb_strtoupper($newConstant);
 
-            foreach ($cases as $case) {
-                $constants[$case->name] = $case->value ?? null;
-            }
             if (!$newConstant) {
                 break;
             }
 
-            $oldValue = null;
-            if (in_array($newConstant, array_column($cases, 'name'))) {
-                foreach ($cases as $case) {
-                    if ($case->name === $newConstant) {
-                        $oldValue = $case->value ?? null;
+            if ($useValues) {
+                $oldValue = null;
+                if (in_array($newConstant, array_column($cases, 'name'))) {
+                    foreach ($cases as $case) {
+                        if ($case->name === $newConstant) {
+                            $oldValue = $case->value ?? null;
+                        }
                     }
                 }
-            }
-            $nextValue = 1;
-            while (in_array($nextValue, array_column($cases, 'value'))) {
-                $nextValue++;
-            }
-            foreach ($cases as $case) {
-                if ($case->name === $newConstant) {
-                    $currentCase = $case;
-                    break;
+                $nextValue = 1;
+                while (in_array($nextValue, array_column($cases, 'value')) || in_array($nextValue, $constants)) {
+                    $nextValue++;
                 }
-            }
-
-            while (true) {
-                $newValue = $this->askForConstantValue($io, $nextValue, $oldValue);
-
-                if ($newValue == $nextValue) {
-                    break;
+                foreach ($cases as $case) {
+                    if ($case->name === $newConstant) {
+                        $currentCase = $case;
+                        break;
+                    }
                 }
+                while (true) {
+                    $newValue = $this->askForConstantValue($io, $nextValue, $oldValue);
 
-                if (!in_array($newValue, array_column($cases, 'value'))) {
-                    break;
-                }
-                if (in_array(array_column($cases, 'name'), $newConstant) && (isset($currentCase->value) && $newValue == $currentCase->value)) {
-                    break;
-                } else {
-                    $io->writeln('<fg=red;options=bold,underscore>Значение уже занято!!!</>');
+                    if ($newValue == $nextValue) {
+                        $nextValue++;
+                        break;
+                    }
+
+                    if (!in_array($newValue, array_column($cases, 'value'))) {
+                        break;
+                    }
+                    if (in_array($newConstant, array_column($cases, 'name')) && (isset($currentCase->value) && $newValue == $currentCase->value)) {
+                        break;
+                    } else {
+                        $io->writeln('<fg=red;options=bold,underscore>Значение уже занято!!!</>');
+                    }
                 }
             }
 
@@ -140,7 +159,7 @@ class MakeList extends AbstractMaker
             $label = $this->askForConstantLabel($io, $defaultLabel);
             $labels[$newConstant] = $label;
 
-            $constants = array_merge($constants, [$newConstant => $newValue]);
+            $constants = array_merge($constants, [$newConstant => $newValue ?? null]);
             $processedConstants[] = $newConstant;
         }
 
@@ -160,20 +179,13 @@ class MakeList extends AbstractMaker
         }
 
         if (class_exists($constantClassDetails->getFullName())) {
-            $ns = str_replace('App\\', '', $constantClassDetails->getFullName());
-            $ns = str_replace('\\', DIRECTORY_SEPARATOR, $ns);
-            $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $ns . '.php';
-
-            unlink($path);
+            unlink($this->fileManager->getRelativePathForFutureClass($constantClassDetails->getFullName()));
         }
 
         $generator->generateClass(
             $constantClassDetails->getFullName(),
             'type/Type.tpl.php',
-            [
-                'constants' => $constants,
-                'labels'    => $labels,
-            ]
+            compact('constants', 'labels', 'useValues')
         );
 
         $generator->writeChanges();
@@ -216,7 +228,7 @@ class MakeList extends AbstractMaker
             $default = $oldValue;
         } else {
             $message = "Введите значение константы (например $nextValue), либо оставьте пустым";
-            $default = null;
+            $default = $nextValue;
         }
         $constantName = $io->ask($message, $default);
 

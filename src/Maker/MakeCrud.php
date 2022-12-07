@@ -215,7 +215,7 @@ final class MakeCrud extends AbstractMaker
                 ]
             );
         } else {
-            $io->text('<bg=yellow;fg=white> Класс типа уже существует! </>' . PHP_EOL);
+            $io->text('<bg=yellow;fg=white> Класс формы уже существует! </>' . PHP_EOL);
         }
 
         if ($this->generateTests) {

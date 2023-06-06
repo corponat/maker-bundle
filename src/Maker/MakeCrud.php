@@ -34,6 +34,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -49,10 +50,13 @@ final class MakeCrud extends AbstractMaker
     private Inflector $inflector;
     private string $controllerClassName;
     private bool $generateTests = false;
+    private bool $useOpenapi;
+    private string $openapiTag;
 
-    public function __construct(private DoctrineHelper $doctrineHelper, private FormTypeRenderer $formTypeRenderer)
+    public function __construct(private DoctrineHelper $doctrineHelper, private FormTypeRenderer $formTypeRenderer, ContainerInterface $container)
     {
         $this->inflector = InflectorFactory::create()->build();
+        $this->useOpenapi = key_exists('NelmioApiDocBundle', $container->getParameter('kernel.bundles'));
     }
 
     public static function getCommandName(): string
@@ -94,6 +98,13 @@ final class MakeCrud extends AbstractMaker
             sprintf('Choose a name for your controller class (e.g. <fg=yellow>%s</>)', $defaultControllerClass),
             $defaultControllerClass
         );
+
+        if ($this->useOpenapi) {
+            $this->openapiTag = $io->ask(
+                sprintf('Choose a tag for your controller class', $input->getArgument('entity-class')),
+                $input->getArgument('entity-class')
+            );
+        }
 
         $this->generateTests = $io->confirm('Do you want to generate tests for the controller?. [Experimental]', false);
     }
@@ -166,8 +177,10 @@ final class MakeCrud extends AbstractMaker
             $controllerClassDetails->getFullName(),
             'crud/controller/Controller.tpl.php',
             array_merge([
-                'use_statements' => $useStatements,
-                'entity_class_name'        => $entityClassDetails->getShortName(),
+                'use_statements'    => $useStatements,
+                'use_openapi'       => $this->useOpenapi,
+                'openapi_tag'       => $this->openapiTag,
+                'entity_class_name' => $entityClassDetails->getShortName(),
 
                 'form_class_name'          => $formClassDetails->getShortName(),
                 'route_path'               => Str::asRoutePath($path),

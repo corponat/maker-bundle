@@ -184,7 +184,6 @@ final class MakeCrud extends AbstractMaker
             )
         );
 
-        $constraintClasses = [];
         $extraUseClasses = [];
         $fieldTypeUseStatements = [];
         $fields = [];
@@ -202,20 +201,14 @@ final class MakeCrud extends AbstractMaker
         $mergedTypeUseStatements = array_unique(array_merge($fieldTypeUseStatements, $extraUseClasses));
         sort($mergedTypeUseStatements);
 
-        if (!class_exists($formClassDetails->getFullName())) {
-            $generator->generateClass(
-                $formClassDetails->getFullName(),
-                'form/Type.tpl.php',
-                [
-                    'bounded_full_class_name'   => $entityClassDetails ? $entityClassDetails->getFullName() : null,
-                    'bounded_class_name'        => $entityClassDetails ? $entityClassDetails->getShortName() : null,
-                    'form_fields'               => $fields,
-                    'field_type_use_statements' => $mergedTypeUseStatements,
-                    'constraint_use_statements' => $constraintClasses,
-                ]
-            );
-        } else {
+        if (class_exists($formClassDetails->getFullName())) {
             $io->text('<bg=yellow;fg=white> Класс формы уже существует! </>' . PHP_EOL);
+        } else {
+            $this->formTypeRenderer->render(
+                $formClassDetails,
+                $fields,
+                $entityClassDetails
+            );
         }
 
         if ($this->generateTests) {

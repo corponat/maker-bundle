@@ -6,14 +6,12 @@ namespace <?= $namespace ?>;
 use App\Controller\AbstractRestController;
 <?php
 if ($use_openapi) : ?>
-use Nelmio\ApiDocBundle\Annotation\Model;
-use OpenApi\Attributes\Get;
-use OpenApi\Attributes\Items;
-use OpenApi\Attributes\JsonContent;
-use OpenApi\Attributes\Property;
-use OpenApi\Attributes\RequestBody;
-use OpenApi\Attributes\Response as OpenapiResponse;
-use OpenApi\Attributes\Tag;
+use App\Attributes\Openapi\EditPatch;
+use App\Attributes\Openapi\GetList;
+use App\Attributes\Openapi\GetShow;
+use App\Attributes\Openapi\NewPost;
+use App\Attributes\Openapi\ResponseSuccess;
+use OpenApi\Attributes\Delete;
 <?php
 endif; ?>
 
@@ -25,7 +23,7 @@ class <?= $class_name ?> extends AbstractRestController
 {
 <?= $generator->generateRouteForControllerMethod('', sprintf('%s_index', $route_name), ['GET']) ?>
 <?php if ($use_openapi) : ?>
-    #[Get(description: '<?= $entity_class_name ?> list', responses: [new OpenapiResponse(response: 200, description: '<?= $entity_class_name ?> list', content: new JsonContent(properties: [new Property('data', type: 'array', items: new Items(ref: new Model(type: <?= $entity_class_name ?>::class, groups: ['default']))), new Property('page', type: 'integer'), new Property('per-page', type: 'integer'), new Property('count', type: 'integer')], type: 'object'))])]
+    #[GetList(description: '<?= $entity_class_name ?> list', class: <?= $entity_class_name ?>::class)]
 <?php endif; ?>
 <?php if (isset($repository_full_class_name)): ?>
     public function index(<?= $repository_class_name ?> $<?= $repository_var ?>)
@@ -45,7 +43,7 @@ class <?= $class_name ?> extends AbstractRestController
 
 <?= $generator->generateRouteForControllerMethod('', sprintf('%s_new', $route_name), ['POST']) ?>
 <?php if ($use_openapi) : ?>
-    #[RequestBody(required: true, attachables: [new Model(type: <?= $form_class_name ?>::class)])]
+    #[NewPost(description: 'Create <?= lcfirst($entity_class_name) ?>', class: <?= $form_class_name ?>::class)]
 <?php endif; ?>
 <?php if (isset($repository_full_class_name) && $generator->repositoryHasSaveAndRemoveMethods($repository_full_class_name)) { ?>
     public function new(Request $request, <?= $repository_class_name ?> $<?= $repository_var ?>)
@@ -74,7 +72,7 @@ class <?= $class_name ?> extends AbstractRestController
 
 <?= $generator->generateRouteForControllerMethod(sprintf('/{%s}', $entity_identifier), sprintf('%s_show', $route_name), ['GET']) ?>
 <?php if ($use_openapi) : ?>
-    #[Get(description: '<?= $entity_class_name ?>', responses: [new OpenapiResponse(response: 200, description: '<?= $entity_class_name ?>', content: new JsonContent(ref: new Model(type: <?= $entity_class_name ?>::class, groups: ['default'])))])]
+    #[GetShow(description: '<?= $entity_class_name ?>', class: <?= $entity_class_name ?>::class)]
 <?php endif; ?>
     public function show(<?= $entity_class_name ?> $<?= $entity_var_singular ?>)
     {
@@ -83,7 +81,7 @@ class <?= $class_name ?> extends AbstractRestController
 
 <?= $generator->generateRouteForControllerMethod(sprintf('/{%s}', $entity_identifier), sprintf('%s_edit', $route_name), ['PATCH']) ?>
 <?php if ($use_openapi) : ?>
-    #[RequestBody(required: true, attachables: [new Model(type: <?= $form_class_name ?>::class)])]
+    #[EditPatch(description: 'Edit <?= lcfirst($entity_class_name) ?>', class: <?= $form_class_name ?>::class)]
 <?php endif; ?>
 <?php if (isset($repository_full_class_name) && $generator->repositoryHasSaveAndRemoveMethods($repository_full_class_name)) { ?>
     public function edit(Request $request, <?= $entity_class_name ?> $<?= $entity_var_singular ?>, <?= $repository_class_name ?> $<?= $repository_var ?>)
@@ -108,6 +106,9 @@ class <?= $class_name ?> extends AbstractRestController
     }
 
 <?= $generator->generateRouteForControllerMethod(sprintf('/{%s}', $entity_identifier), sprintf('%s_delete', $route_name), ['DELETE']) ?>
+<?php if ($use_openapi) : ?>
+    #[Delete(description: 'Delete <?= lcfirst($entity_class_name) ?>', responses: [new ResponseSuccess()])]
+<?php endif; ?>
 <?php if (isset($repository_full_class_name) && $generator->repositoryHasSaveAndRemoveMethods($repository_full_class_name)) { ?>
     public function delete(<?= $entity_class_name ?> $<?= $entity_var_singular ?>, <?= $repository_class_name ?> $<?= $repository_var ?>)
 <?php } else { ?>

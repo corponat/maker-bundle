@@ -16,7 +16,7 @@ namespace <?= $namespace ?>;
 class <?= $class_name."\n" ?>
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'SEQUENCE')]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 

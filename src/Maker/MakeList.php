@@ -115,7 +115,7 @@ class MakeList extends AbstractMaker
         $processedConstants = [];
         while (true) {
             $newConstant = $this->askForConstantName($io, $cases, $processedConstants);
-            $newConstant = mb_strtoupper(preg_replace('/(?<!^)[A-Z]/um', '_$0', $newConstant));
+            $newConstant = mb_strtoupper(preg_replace('/((?<!^)[A-Z]|(?<=\s)\w)/um', '_$0', $newConstant));
 
             if (!$newConstant) {
                 break;

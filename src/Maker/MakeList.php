@@ -12,6 +12,7 @@ use Symfony\Bundle\MakerBundle\InputConfiguration;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 
 /**
@@ -82,9 +83,12 @@ class MakeList extends AbstractMaker
             'Enums\\'
         );
 
-        $question = new Question('Use backed enum?', 'true');
-        $question->setAutocompleterValues(['true', 'false']);
-        $useValues = $io->askQuestion($question) === 'true';
+        $question = new ConfirmationQuestion('Use backed enum?');
+        $isInteger = false;
+        if ($useValues = $io->askQuestion($question)) {
+            $question = new ConfirmationQuestion('Set integer?');
+            $isInteger = $io->askQuestion($question);
+        }
 
         $constants = [];
         $cases = [];
@@ -111,7 +115,7 @@ class MakeList extends AbstractMaker
         $processedConstants = [];
         while (true) {
             $newConstant = $this->askForConstantName($io, $cases, $processedConstants);
-            $newConstant = mb_strtoupper($newConstant);
+            $newConstant = mb_strtoupper(preg_replace('/(?<!^)[A-Z]/um', '_$0', $newConstant));
 
             if (!$newConstant) {
                 break;
@@ -185,7 +189,7 @@ class MakeList extends AbstractMaker
         $generator->generateClass(
             $constantClassDetails->getFullName(),
             'type/Type.tpl.php',
-            compact('constants', 'labels', 'useValues')
+            compact('constants', 'labels', 'useValues', 'isInteger')
         );
 
         $generator->writeChanges();

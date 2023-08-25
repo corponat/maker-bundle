@@ -6,9 +6,10 @@
  * @var array   $constants
  * @var array   $labels
  * @var boolean $useValues
+ * @var boolean $isInteger
  */
 
-$type = $useValues ? ': int'  : '';
+$type = $useValues ? ': ' . ($isInteger ? 'int' : 'string')  : '';
 
 ?>
 <?= "<?php\n" ?>
@@ -18,6 +19,9 @@ namespace <?= $namespace ?>;
 enum <?= $class_name ?><?= $type ?><?= "\n" ?>
 {
 <?php foreach ($constants as $constantName => $value): ?>
+    <?php if ($useValues && !$isInteger) : ?>
+        <?php $value = "'$value'" ?>
+    <?php endif; ?>
     case <?= $constantName ?><?= $useValues ? " = $value" : '' ?>;
 <?php endforeach; ?>
 

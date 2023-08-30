@@ -193,7 +193,11 @@ class MakeList extends AbstractMaker
                 ksort($constants);
                 $i = 0;
                 foreach ($constants as &$constant) {
-                    $constant = $orderedConstants[$i++];
+                    if ($autoValues) {
+                        $constant = $i++ + 1;
+                    } else {
+                        $constant = $orderedConstants[$i++];
+                    }
                 }
             } else {
                 ksort($constants);

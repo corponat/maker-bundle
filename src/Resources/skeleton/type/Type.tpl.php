@@ -7,6 +7,7 @@
  * @var array   $labels
  * @var boolean $useValues
  * @var boolean $isInteger
+ * @var boolean $addLabels
  */
 
 $type = $useValues ? ': ' . ($isInteger ? 'int' : 'string')  : '';
@@ -25,6 +26,7 @@ enum <?= $class_name ?><?= $type ?><?= "\n" ?>
 case <?= $constantName ?><?= $useValues ? " = $value" : '' ?>;
 <?php endforeach; ?>
 
+<?php if ($addLabels) : ?>
     public static function getLabels(): array
     {
         return [
@@ -38,4 +40,5 @@ case <?= $constantName ?><?= $useValues ? " = $value" : '' ?>;
     {
         return self::getLabels()[$this-><?= $useValues ? 'value' : 'name' ?>] ?? '';
     }
+<?php endif; ?>
 }

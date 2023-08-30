@@ -25,8 +25,8 @@ enum <?= $class_name ?><?= $type ?><?= "\n" ?>
     <?php endif; ?>
 case <?= $constantName ?><?= $useValues ? " = $value" : '' ?>;
 <?php endforeach; ?>
-
 <?php if ($addLabels) : ?>
+
     public static function getLabels(): array
     {
         return [

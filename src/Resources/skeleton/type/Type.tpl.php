@@ -22,7 +22,7 @@ enum <?= $class_name ?><?= $type ?><?= "\n" ?>
     <?php if ($useValues && !$isInteger) : ?>
         <?php $value = "'$value'" ?>
     <?php endif; ?>
-    case <?= $constantName ?><?= $useValues ? " = $value" : '' ?>;
+case <?= $constantName ?><?= $useValues ? " = $value" : '' ?>;
 <?php endforeach; ?>
 
     public static function getLabels(): array

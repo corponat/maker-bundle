@@ -83,12 +83,14 @@ class MakeList extends AbstractMaker
             'Enums\\'
         );
 
-        $question = new ConfirmationQuestion('Use backed enum?');
         $isInteger = false;
-        if ($useValues = $io->askQuestion($question)) {
-            $question = new ConfirmationQuestion('Set integer?');
-            $isInteger = $io->askQuestion($question);
+        $autoValues = false;
+        if ($useValues = $io->askQuestion(new ConfirmationQuestion('Use backed enum?'))) {
+            if ($isInteger = $io->askQuestion(new ConfirmationQuestion('Set integer?'))) {
+                $autoValues = $io->askQuestion(new ConfirmationQuestion('set values auto?'));
+            }
         }
+        $addLabels = $io->askQuestion(new ConfirmationQuestion('Add labels?', false));
 
         $constants = [];
         $cases = [];
@@ -140,28 +142,34 @@ class MakeList extends AbstractMaker
                         break;
                     }
                 }
-                while (true) {
-                    $newValue = $this->askForConstantValue($io, $nextValue, $oldValue);
+                if ($autoValues) {
+                    $newValue = $nextValue;
+                } else {
+                    while (true) {
+                        $newValue = $this->askForConstantValue($io, $nextValue, $oldValue);
 
-                    if ($newValue == $nextValue) {
-                        $nextValue++;
-                        break;
-                    }
+                        if ($newValue == $nextValue) {
+                            $nextValue++;
+                            continue;
+                        }
 
-                    if (!in_array($newValue, array_column($cases, 'value'))) {
-                        break;
-                    }
-                    if (in_array($newConstant, array_column($cases, 'name')) && (isset($currentCase->value) && $newValue == $currentCase->value)) {
-                        break;
-                    } else {
-                        $io->writeln('<fg=red;options=bold,underscore>Значение уже занято!!!</>');
+                        if (!in_array($newValue, array_column($cases, 'value'))) {
+                            break;
+                        }
+                        if (in_array($newConstant, array_column($cases, 'name')) && (isset($currentCase->value) && $newValue == $currentCase->value)) {
+                            break;
+                        } else {
+                            $io->writeln('<fg=red;options=bold,underscore>Значение уже занято!!!</>');
+                        }
                     }
                 }
             }
 
-            $defaultLabel = $labels[$newConstant] ?? null;
-            $label = $this->askForConstantLabel($io, $defaultLabel);
-            $labels[$newConstant] = $label;
+            if ($addLabels) {
+                $defaultLabel = $labels[$newConstant] ?? null;
+                $label = $this->askForConstantLabel($io, $defaultLabel);
+                $labels[$newConstant] = $label;
+            }
 
             $constants = array_merge($constants, [$newConstant => $newValue ?? null]);
             $processedConstants[] = $newConstant;
@@ -179,7 +187,17 @@ class MakeList extends AbstractMaker
         if ($sort == 'По значениям') {
             asort($constants);
         } else {
-            ksort($constants);
+            if ($io->askQuestion(new ConfirmationQuestion('Перенумеровать значения?', false))) {
+                asort($constants);
+                $orderedConstants = array_values($constants);
+                ksort($constants);
+                $i = 0;
+                foreach ($constants as &$constant) {
+                    $constant = $orderedConstants[$i++];
+                }
+            } else {
+                ksort($constants);
+            }
         }
 
         if (class_exists($constantClassDetails->getFullName())) {
@@ -189,7 +207,7 @@ class MakeList extends AbstractMaker
         $generator->generateClass(
             $constantClassDetails->getFullName(),
             'type/Type.tpl.php',
-            compact('constants', 'labels', 'useValues', 'isInteger')
+            compact('constants', 'labels', 'useValues', 'isInteger', 'addLabels')
         );
 
         $generator->writeChanges();
@@ -204,16 +222,14 @@ class MakeList extends AbstractMaker
      *
      * @return mixed
      */
-    private function askForConstantName(ConsoleStyle $io, $cases, $processedConstants = [])
+    private function askForConstantName(ConsoleStyle $io, $cases, array $processedConstants = [])
     {
         $io->writeln('');
         $question = new Question('Введите константу');
 
         $question->setAutocompleterValues(array_diff(array_column($cases, 'name'), $processedConstants));
 
-        $constantName = $io->askQuestion($question);
-
-        return $constantName;
+        return $io->askQuestion($question);
     }
 
     /**

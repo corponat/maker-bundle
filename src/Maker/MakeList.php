@@ -132,9 +132,10 @@ class MakeList extends AbstractMaker
                         }
                     }
                 }
-                $nextValue = 1;
+                $nextValue = $isInteger ? 1 : mb_strtolower($newConstant);
+                $i = 1;
                 while (in_array($nextValue, array_column($cases, 'value')) || in_array($nextValue, $constants)) {
-                    $nextValue++;
+                    $nextValue = $isInteger ? $nextValue + 1 : $nextValue . '_' . $i++;
                 }
                 foreach ($cases as $case) {
                     if ($case->name === $newConstant) {

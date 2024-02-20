@@ -150,8 +150,7 @@ class MakeList extends AbstractMaker
                         $newValue = $this->askForConstantValue($io, $nextValue, $oldValue);
 
                         if ($newValue == $nextValue) {
-                            $nextValue++;
-                            continue;
+                            break;
                         }
 
                         if (!in_array($newValue, array_column($cases, 'value'))) {
@@ -255,9 +254,8 @@ class MakeList extends AbstractMaker
             $message = "Введите значение константы (например $nextValue), либо оставьте пустым";
             $default = $nextValue;
         }
-        $constantName = $io->ask($message, $default);
 
-        return $constantName;
+        return $io->ask($message, $default);
     }
 
     /**

@@ -8,6 +8,9 @@ class User implements UserInterface
 {
     private $userIdentifier;
 
+    /**
+     * @var list<string> The user roles
+     */
     private $roles = [];
 
     /**
@@ -20,7 +23,7 @@ class User implements UserInterface
         return (string) $this->userIdentifier;
     }
 
-    public function setUserIdentifier(string $userIdentifier): self
+    public function setUserIdentifier(string $userIdentifier): static
     {
         $this->userIdentifier = $userIdentifier;
 
@@ -29,6 +32,7 @@ class User implements UserInterface
 
     /**
      * @see UserInterface
+     * @return list<string>
      */
     public function getRoles(): array
     {
@@ -39,7 +43,10 @@ class User implements UserInterface
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): self
+    /**
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
 
@@ -49,7 +56,7 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;

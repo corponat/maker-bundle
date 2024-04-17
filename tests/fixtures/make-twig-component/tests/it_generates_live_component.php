@@ -8,9 +8,11 @@ class GeneratedTwigComponentTest extends KernelTestCase
 {
     public function testController()
     {
-        $output = self::getContainer()->get('twig')->createTemplate("{{ component('{name}') }}")->render();
+        $output = self::getContainer()->get('twig')->createTemplate("<twig:{name} />")->render();
 
-        $this->assertStringContainsString('<div data-controller="live" data-live-url-value=', $output);
+        $this->assertStringContainsString('<div data-controller="live"', $output);
+        $this->assertStringContainsString('data-live-name-value="', $output);
+        $this->assertStringContainsString('data-live-url-value=', $output);
         $this->assertStringContainsString('<!-- component html -->', $output);
     }
 }

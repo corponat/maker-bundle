@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity]
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_USER_IDENTIFIER', fields: ['userIdentifier'])]
 class User implements UserInterface
 {
     #[ORM\Id]
@@ -13,9 +14,12 @@ class User implements UserInterface
     #[ORM\Column()]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180, unique: true)]
+    #[ORM\Column(length: 180)]
     private ?string $userIdentifier = null;
 
+    /**
+     * @var list<string> The user roles
+     */
     #[ORM\Column]
     private array $roles = [];
 
@@ -34,7 +38,7 @@ class User implements UserInterface
         return (string) $this->userIdentifier;
     }
 
-    public function setUserIdentifier(string $userIdentifier): self
+    public function setUserIdentifier(string $userIdentifier): static
     {
         $this->userIdentifier = $userIdentifier;
 
@@ -43,6 +47,7 @@ class User implements UserInterface
 
     /**
      * @see UserInterface
+     * @return list<string>
      */
     public function getRoles(): array
     {
@@ -53,7 +58,10 @@ class User implements UserInterface
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): self
+    /**
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
 
@@ -63,7 +71,7 @@ class User implements UserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;

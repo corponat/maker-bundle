@@ -17,6 +17,9 @@ class SourFood
     #[ORM\Column(name: 'title', length: 255)]
     private ?string $title = null;
 
+    /**
+     * @var Collection<int, Property>
+     */
     #[ORM\OneToMany(targetEntity: Property::class, mappedBy: 'sourFood')]
     private Collection $properties;
 
@@ -44,8 +47,10 @@ class SourFood
     /**
      * @param mixed $title
      */
-    public function setTitle($title)
+    public function setTitle($title): static
     {
         $this->title = $title;
+
+        return $this;
     }
 }

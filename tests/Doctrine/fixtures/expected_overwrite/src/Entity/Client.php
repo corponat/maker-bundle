@@ -17,6 +17,9 @@ class Client extends BaseClient
     #[ORM\Column]
     private ?string $apiKey = null;
 
+    /**
+     * @var Collection<int, Tag>
+     */
     #[ORM\ManyToMany(targetEntity: Tag::class)]
     private Collection $tags;
 
@@ -35,7 +38,7 @@ class Client extends BaseClient
         return $this->embed;
     }
 
-    public function setEmbed(Embed $embed): self
+    public function setEmbed(Embed $embed): static
     {
         $this->embed = $embed;
 
@@ -47,7 +50,7 @@ class Client extends BaseClient
         return $this->apiKey;
     }
 
-    public function setApiKey(string $apiKey): self
+    public function setApiKey(string $apiKey): static
     {
         $this->apiKey = $apiKey;
 
@@ -62,7 +65,7 @@ class Client extends BaseClient
         return $this->tags;
     }
 
-    public function addTag(Tag $tag): self
+    public function addTag(Tag $tag): static
     {
         if (!$this->tags->contains($tag)) {
             $this->tags->add($tag);
@@ -71,7 +74,7 @@ class Client extends BaseClient
         return $this;
     }
 
-    public function removeTag(Tag $tag): self
+    public function removeTag(Tag $tag): static
     {
         $this->tags->removeElement($tag);
 

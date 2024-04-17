@@ -2,10 +2,8 @@ The Symfony MakerBundle
 =======================
 
 Symfony Maker helps you create empty commands, controllers, form classes,
-tests and more so you can forget about writing boilerplate code. This
-bundle is an alternative to `SensioGeneratorBundle`_ for modern Symfony
-applications and requires using Symfony 3.4 or newer. This bundle
-assumes you're using a standard Symfony 4 directory structure, but many
+tests and more so you can forget about writing boilerplate code. This bundle
+assumes you're using a standard Symfony 5 directory structure, but many
 commands can generate code into any application.
 
 Installation
@@ -42,6 +40,27 @@ optional arguments and options. Check them out with the ``--help`` option:
 .. code-block:: terminal
 
     $ php bin/console make:controller --help
+
+
+Linting Generated Code
+______________________
+
+MakerBundle uses php-cs-fixer to enforce coding standards when generating ``.php``
+files. When running a ``make`` command, MakerBundle will use a ``php-cs-fixer``
+version and configuration that is packaged with this bundle.
+
+You can explicitly set a custom path to a php-cs-fixer binary and/or configuration
+file by their respective environment variables:
+
+- ``MAKER_PHP_CS_FIXER_BINARY_PATH`` e.g. tools/vendor/bin/php-cs-fixer
+- ``MAKER_PHP_CS_FIXER_CONFIG_PATH`` e.g. .php-cs-fixer.config.php
+
+
+.. tip::
+
+    Is PHP-CS-Fixer installed globally? To avoid needing to set these in every
+    project, you can instead set these on your operating system.
+
 
 Configuration
 -------------

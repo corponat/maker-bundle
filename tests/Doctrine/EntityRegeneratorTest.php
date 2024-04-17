@@ -12,6 +12,7 @@
 namespace Symfony\Bundle\MakerBundle\Tests\Doctrine;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
+use Doctrine\Persistence\Reflection\RuntimeReflectionProperty;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
@@ -158,9 +159,7 @@ class TestEntityRegeneratorKernel extends Kernel
             'router' => [
                 'utf8' => true,
             ],
-            'annotations' => [
-                'enabled' => true,
-            ],
+            'http_method_override' => false,
         ]);
 
         $dbal = [
@@ -168,18 +167,26 @@ class TestEntityRegeneratorKernel extends Kernel
             'url' => 'sqlite:///fake',
         ];
 
-        $c->prependExtensionConfig('doctrine', [
-            'dbal' => $dbal,
-            'orm' => [
-                'mappings' => [
-                    'EntityRegenerator' => [
-                        'is_bundle' => false,
-                        'dir' => '%kernel.project_dir%/src/Entity',
-                        'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project\src\Entity',
-                        'alias' => 'EntityRegeneratorApp',
-                    ],
+        $orm = [
+            'mappings' => [
+                'EntityRegenerator' => [
+                    'is_bundle' => false,
+                    'dir' => '%kernel.project_dir%/src/Entity',
+                    'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project\src\Entity',
+                    'alias' => 'EntityRegeneratorApp',
+                    'type' => 'attribute',
                 ],
             ],
+        ];
+
+        /* @legacy Remove conditional when doctrine/persistence <3.1 are no longer supported. */
+        if (class_exists(RuntimeReflectionProperty::class)) {
+            $orm['enable_lazy_ghost_objects'] = true;
+        }
+
+        $c->prependExtensionConfig('doctrine', [
+            'dbal' => $dbal,
+            'orm' => $orm,
         ]);
     }
 
@@ -212,6 +219,7 @@ class TestXmlEntityRegeneratorKernel extends Kernel
             'router' => [
                 'utf8' => true,
             ],
+            'http_method_override' => false,
         ]);
 
         $dbal = [
@@ -219,20 +227,27 @@ class TestXmlEntityRegeneratorKernel extends Kernel
             'url' => 'sqlite:///fake',
         ];
 
-        $c->prependExtensionConfig('doctrine', [
-            'dbal' => $dbal,
-            'orm' => [
-                'auto_generate_proxy_classes' => true,
-                'mappings' => [
-                    'EntityRegenerator' => [
-                        'is_bundle' => false,
-                        'type' => 'xml',
-                        'dir' => '%kernel.project_dir%/config/doctrine',
-                        'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project_xml\src\Entity',
-                        'alias' => 'EntityRegeneratorApp',
-                    ],
+        $orm = [
+            'auto_generate_proxy_classes' => true,
+            'mappings' => [
+                'EntityRegenerator' => [
+                    'is_bundle' => false,
+                    'type' => 'xml',
+                    'dir' => '%kernel.project_dir%/config/doctrine',
+                    'prefix' => 'Symfony\Bundle\MakerBundle\Tests\tmp\current_project_xml\src\Entity',
+                    'alias' => 'EntityRegeneratorApp',
                 ],
             ],
+        ];
+
+        /* @legacy Remove conditional when doctrine/persistence <3.1 are no longer supported. */
+        if (class_exists(RuntimeReflectionProperty::class)) {
+            $orm['enable_lazy_ghost_objects'] = true;
+        }
+
+        $c->prependExtensionConfig('doctrine', [
+            'dbal' => $dbal,
+            'orm' => $orm,
         ]);
     }
 

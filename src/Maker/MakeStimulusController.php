@@ -20,6 +20,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Question\Question;
+use Symfony\UX\StimulusBundle\StimulusBundle;
 use Symfony\WebpackEncoreBundle\WebpackEncoreBundle;
 
 /**
@@ -36,7 +37,7 @@ final class MakeStimulusController extends AbstractMaker
 
     public static function getCommandDescription(): string
     {
-        return 'Creates a new Stimulus controller';
+        return 'Create a new Stimulus controller';
     }
 
     public function configureCommand(Command $command, InputConfiguration $inputConfig): void
@@ -49,8 +50,8 @@ final class MakeStimulusController extends AbstractMaker
     public function interact(InputInterface $input, ConsoleStyle $io, Command $command): void
     {
         $command->addArgument('extension', InputArgument::OPTIONAL);
-        $command->addArgument('targets', InputArgument::OPTIONAL, '', []);
-        $command->addArgument('values', InputArgument::OPTIONAL, '', []);
+        $command->addArgument('targets', InputArgument::OPTIONAL);
+        $command->addArgument('values', InputArgument::OPTIONAL);
 
         $chosenExtension = $io->choice(
             'Language (<fg=yellow>JavaScript</> or <fg=yellow>TypeScript</>)',
@@ -130,6 +131,7 @@ final class MakeStimulusController extends AbstractMaker
         ]);
     }
 
+    /** @param string[] $targets */
     private function askForNextTarget(ConsoleStyle $io, array $targets, bool $isFirstTarget): ?string
     {
         $questionText = 'New target name (press <return> to stop adding targets)';
@@ -138,7 +140,7 @@ final class MakeStimulusController extends AbstractMaker
             $questionText = 'Add another target? Enter the target name (or press <return> to stop adding targets)';
         }
 
-        $targetName = $io->ask($questionText, null, function (?string $name) use ($targets) {
+        $targetName = $io->ask($questionText, validator: function (?string $name) use ($targets) {
             if (\in_array($name, $targets)) {
                 throw new \InvalidArgumentException(sprintf('The "%s" target already exists.', $name));
             }
@@ -149,6 +151,11 @@ final class MakeStimulusController extends AbstractMaker
         return !$targetName ? null : $targetName;
     }
 
+    /**
+     * @param array<string, array<string, string>> $values
+     *
+     * @return array<string, string>|null
+     */
     private function askForNextValue(ConsoleStyle $io, array $values, bool $isFirstValue): ?array
     {
         $questionText = 'New value name (press <return> to stop adding values)';
@@ -174,7 +181,7 @@ final class MakeStimulusController extends AbstractMaker
         // convert to snake case for simplicity
         $snakeCasedField = Str::asSnakeCase($valueName);
 
-        if ('_id' === $suffix = substr($snakeCasedField, -3)) {
+        if (str_ends_with($snakeCasedField, '_id')) {
             $defaultType = 'Number';
         } elseif (str_starts_with($snakeCasedField, 'is_')) {
             $defaultType = 'Boolean';
@@ -214,6 +221,7 @@ final class MakeStimulusController extends AbstractMaker
         }
     }
 
+    /** @return string[] */
     private function getValuesTypes(): array
     {
         return [
@@ -227,9 +235,20 @@ final class MakeStimulusController extends AbstractMaker
 
     public function configureDependencies(DependencyBuilder $dependencies): void
     {
+        // lower than 8.1, allow WebpackEncoreBundle
+        if (\PHP_VERSION_ID < 80100) {
+            $dependencies->addClassDependency(
+                WebpackEncoreBundle::class,
+                'symfony/webpack-encore-bundle'
+            );
+
+            return;
+        }
+
+        // else: encourage StimulusBundle by requiring it
         $dependencies->addClassDependency(
-            WebpackEncoreBundle::class,
-            'webpack-encore-bundle'
+            StimulusBundle::class,
+            'symfony/stimulus-bundle'
         );
     }
 }

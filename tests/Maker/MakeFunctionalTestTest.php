@@ -13,6 +13,7 @@ namespace Symfony\Bundle\MakerBundle\Tests\Maker;
 
 use Symfony\Bundle\MakerBundle\Maker\MakeFunctionalTest;
 use Symfony\Bundle\MakerBundle\Test\MakerTestCase;
+use Symfony\Bundle\MakerBundle\Test\MakerTestDetails;
 use Symfony\Bundle\MakerBundle\Test\MakerTestRunner;
 
 /**
@@ -25,11 +26,10 @@ class MakeFunctionalTestTest extends MakerTestCase
         return MakeFunctionalTest::class;
     }
 
-    public function getTestDetails()
+    public function getTestDetails(): \Generator
     {
-        yield 'it_generates_test_with_panther' => [$this->createMakerTest()
-            /* @legacy Allows Panther >= 1.x to be installed. (PHP <8.0 support) */
-            ->addExtraDependencies('panther:*')
+        yield 'it_generates_test_with_panther' => [$this->getPantherTest()
+            ->addExtraDependencies('panther')
             ->run(function (MakerTestRunner $runner) {
                 $runner->copy(
                     'make-functional/MainController.php',
@@ -48,5 +48,14 @@ class MakeFunctionalTestTest extends MakerTestCase
                 $runner->runTests();
             }),
         ];
+    }
+
+    protected function getPantherTest(): MakerTestDetails
+    {
+        return $this->createMakerTest()
+            ->skipTest(
+                message: 'Panther test skipped - MAKER_SKIP_PANTHER_TEST set to TRUE.',
+                skipped: getenv('MAKER_SKIP_PANTHER_TEST')
+            );
     }
 }

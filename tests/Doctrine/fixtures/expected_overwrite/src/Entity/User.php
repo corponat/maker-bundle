@@ -14,12 +14,18 @@ class User
     #[ORM\Column]
     private ?int $id = null;
 
+    /**
+     * @var Collection<int, UserAvatar>
+     */
     #[ORM\OneToMany(targetEntity: UserAvatar::class, mappedBy: 'user')]
     private Collection $avatars;
 
     #[ORM\OneToOne(mappedBy: 'user')]
     private ?UserProfile $userProfile = null;
 
+    /**
+     * @var Collection<int, Tag>
+     */
     #[ORM\ManyToMany(targetEntity: Tag::class)]
     private Collection $tags;
 
@@ -39,7 +45,7 @@ class User
         return '';
     }
 
-    public function setUserProfile(?UserProfile $userProfile): self
+    public function setUserProfile(?UserProfile $userProfile): static
     {
         // unset the owning side of the relation if necessary
         if ($userProfile === null && $this->userProfile !== null) {
@@ -64,7 +70,7 @@ class User
         return $this->avatars;
     }
 
-    public function addAvatar(UserAvatar $avatar): self
+    public function addAvatar(UserAvatar $avatar): static
     {
         if (!$this->avatars->contains($avatar)) {
             $this->avatars->add($avatar);
@@ -74,7 +80,7 @@ class User
         return $this;
     }
 
-    public function removeAvatar(UserAvatar $avatar): self
+    public function removeAvatar(UserAvatar $avatar): static
     {
         if ($this->avatars->removeElement($avatar)) {
             // set the owning side to null (unless already changed)
@@ -99,7 +105,7 @@ class User
         return $this->tags;
     }
 
-    public function addTag(Tag $tag): self
+    public function addTag(Tag $tag): static
     {
         if (!$this->tags->contains($tag)) {
             $this->tags->add($tag);
@@ -108,7 +114,7 @@ class User
         return $this;
     }
 
-    public function removeTag(Tag $tag): self
+    public function removeTag(Tag $tag): static
     {
         $this->tags->removeElement($tag);
 

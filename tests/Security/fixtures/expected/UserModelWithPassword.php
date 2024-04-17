@@ -9,6 +9,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     private $userIdentifier;
 
+    /**
+     * @var list<string> The user roles
+     */
     private $roles = [];
 
     /**
@@ -26,7 +29,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->userIdentifier;
     }
 
-    public function setUserIdentifier(string $userIdentifier): self
+    public function setUserIdentifier(string $userIdentifier): static
     {
         $this->userIdentifier = $userIdentifier;
 
@@ -35,6 +38,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
+     * @return list<string>
      */
     public function getRoles(): array
     {
@@ -45,7 +49,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
-    public function setRoles(array $roles): self
+    /**
+     * @param list<string> $roles
+     */
+    public function setRoles(array $roles): static
     {
         $this->roles = $roles;
 
@@ -60,7 +67,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(string $password): static
     {
         $this->password = $password;
 
@@ -70,7 +77,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see UserInterface
      */
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;

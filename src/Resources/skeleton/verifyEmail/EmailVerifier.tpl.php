@@ -41,9 +41,9 @@ class <?= $class_name; ?><?= "\n" ?>
      */
     public function handleEmailConfirmation(Request $request, UserInterface $user): void
     {
-        $this->verifyEmailHelper->validateEmailConfirmation($request->getUri(), $user-><?= $id_getter ?>(), $user-><?= $email_getter?>());
+        $this->verifyEmailHelper->validateEmailConfirmationFromRequest($request, $user-><?= $id_getter ?>(), $user-><?= $email_getter?>());
 
-        $user->setIsVerified(true);
+        $user->setVerified(true);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

@@ -14,6 +14,9 @@ class User
     #[ORM\Column()]
     private ?int $id = null;
 
+    /**
+     * @var Collection<int, Recipe>
+     */
     #[ORM\ManyToMany(targetEntity: Recipe::class)]
     private Collection $recipes;
 
@@ -35,7 +38,7 @@ class User
         return $this->recipes;
     }
 
-    public function addRecipe(Recipe $recipe): self
+    public function addRecipe(Recipe $recipe): static
     {
         if (!$this->recipes->contains($recipe)) {
             $this->recipes->add($recipe);
@@ -44,7 +47,7 @@ class User
         return $this;
     }
 
-    public function removeRecipe(Recipe $recipe): self
+    public function removeRecipe(Recipe $recipe): static
     {
         $this->recipes->removeElement($recipe);
 

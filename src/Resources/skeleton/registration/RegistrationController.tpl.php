@@ -7,16 +7,13 @@ namespace <?= $namespace; ?>;
 class <?= $class_name; ?> extends AbstractController
 {
 <?php if ($will_verify_email): ?>
-    private <?= $generator->getPropertyType($email_verifier_class_details) ?>$emailVerifier;
-
-    public function __construct(<?= $email_verifier_class_details->getShortName() ?> $emailVerifier)
+    public function __construct(private <?= $generator->getPropertyType($email_verifier_class_details) ?>$emailVerifier)
     {
-        $this->emailVerifier = $emailVerifier;
     }
 
 <?php endif; ?>
 <?= $generator->generateRouteForControllerMethod($route_path, $route_name) ?>
-    public function register(Request $request, <?= $password_hasher_class_details->getShortName() ?> <?= $password_hasher_variable_name ?><?= $authenticator_full_class_name ? sprintf(', %s %s, %s $authenticator', ($use_new_authenticator_system ? 'UserAuthenticatorInterface' : 'GuardAuthenticatorHandler'), ($use_new_authenticator_system ? '$userAuthenticator' : '$guardHandler'), $authenticator_class_name) : '' ?>, EntityManagerInterface $entityManager): Response
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher<?= $login_after_registration ? ', Security $security': '' ?>, EntityManagerInterface $entityManager): Response
     {
         $user = new <?= $user_class_name ?>();
         $form = $this->createForm(<?= $form_class_name ?>::class, $user);
@@ -25,7 +22,7 @@ class <?= $class_name; ?> extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             // encode the plain password
             $user->set<?= ucfirst($password_field) ?>(
-                <?= $password_hasher_variable_name ?>-><?= $use_password_hasher ? 'hashPassword' : 'encodePassword' ?>(
+                    $userPasswordHasher->hashPassword(
                     $user,
                     $form->get('plainPassword')->getData()
                 )
@@ -44,30 +41,18 @@ class <?= $class_name; ?> extends AbstractController
                     ->htmlTemplate('registration/confirmation_email.html.twig')
             );
 <?php endif; ?>
+
             // do anything else you need here, like send an email
 
-<?php if ($authenticator_full_class_name): ?>
-<?php if ($use_new_authenticator_system): ?>
-            return $userAuthenticator->authenticateUser(
-                $user,
-                $authenticator,
-                $request
-            );
-<?php else: ?>
-            return $guardHandler->authenticateUserAndHandleSuccess(
-                $user,
-                $request,
-                $authenticator,
-                '<?= $firewall_name; ?>' // firewall name in security.yaml
-            );
-<?php endif; ?>
+<?php if ($login_after_registration): ?>
+            return $security->login($user, <?= $authenticator ?>, '<?= $firewall ?>');
 <?php else: ?>
             return $this->redirectToRoute('<?= $redirect_route_name ?>');
 <?php endif; ?>
         }
 
         return $this->render('registration/register.html.twig', [
-            'registrationForm' => $form->createView(),
+            'registrationForm' => $form,
         ]);
     }
 <?php if ($will_verify_email): ?>
@@ -78,7 +63,7 @@ class <?= $class_name; ?> extends AbstractController
 <?php if (!$verify_email_anonymously): ?>
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 <?php else: ?>
-        $id = $request->get('id');
+        $id = $request->query->get('id');
 
         if (null === $id) {
             return $this->redirectToRoute('app_register');

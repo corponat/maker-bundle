@@ -34,9 +34,10 @@ final class MakeValidator extends AbstractMaker
 
     public static function getCommandDescription(): string
     {
-        return 'Creates a new validator and constraint class';
+        return 'Create a new validator and constraint class';
     }
 
+    /** @return void */
     public function configureCommand(Command $command, InputConfiguration $inputConf)
     {
         $command
@@ -45,6 +46,7 @@ final class MakeValidator extends AbstractMaker
         ;
     }
 
+    /** @return void */
     public function generate(InputInterface $input, ConsoleStyle $io, Generator $generator)
     {
         $validatorClassNameDetails = $generator->createClassNameDetails(
@@ -59,7 +61,7 @@ final class MakeValidator extends AbstractMaker
             $validatorClassNameDetails->getFullName(),
             'validator/Validator.tpl.php',
             [
-                'constraint_class_name' => $constraintFullClassName,
+                'constraint_class_name' => Str::getShortClassName($constraintFullClassName),
             ]
         );
 
@@ -79,6 +81,7 @@ final class MakeValidator extends AbstractMaker
         ]);
     }
 
+    /** @return void */
     public function configureDependencies(DependencyBuilder $dependencies)
     {
         $dependencies->addClassDependency(

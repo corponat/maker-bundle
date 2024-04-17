@@ -65,7 +65,6 @@ class <?= $class_name ?> extends AbstractRestController
 
             return $this->created($<?= $entity_var_singular ?>);
         }
-<?php } ?>
 
         return $form;
     }
@@ -100,7 +99,6 @@ class <?= $class_name ?> extends AbstractRestController
         if ($form->isSubmitted() && $form->isValid()) {
             $this->manager->persist($form->getData());
         }
-<?php } ?>
 
         return $form;
     }

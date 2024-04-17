@@ -50,8 +50,8 @@ abstract class MakerTestCase extends TestCase
             throw new \LogicException('The MakerTestCase cannot be run as the Process component is not installed. Try running "compose require --dev symfony/process".');
         }
 
-        if (!$testDetails->isSupportedByCurrentPhpVersion()) {
-            $this->markTestSkipped();
+        if ($testDetails->isTestSkipped() || !$testDetails->isSupportedByCurrentPhpVersion()) {
+            $this->markTestSkipped($testDetails->getSkippedTestMessage());
         }
 
         $testEnv = MakerTestEnvironment::create($testDetails);
@@ -76,16 +76,6 @@ abstract class MakerTestCase extends TestCase
 
         foreach ($files as $file) {
             $this->assertTrue($testEnv->fileExists($file), sprintf('The file "%s" does not exist after generation', $file));
-
-            if (str_ends_with($file, '.php')) {
-                $csProcess = $testEnv->runPhpCSFixer($file);
-
-                $this->assertTrue($csProcess->isSuccessful(), sprintf(
-                    "File '%s' has a php-cs problem: %s\n",
-                    $file,
-                    $csProcess->getErrorOutput()."\n".$csProcess->getOutput()
-                ));
-            }
 
             if (str_ends_with($file, '.twig')) {
                 $csProcess = $testEnv->runTwigCSLint($file);

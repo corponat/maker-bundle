@@ -24,7 +24,7 @@ class FunctionalTest extends TestCase
      * Smoke test to make sure the DI autowiring works and all makers
      * are registered and have the correct arguments.
      */
-    public function testWiring()
+    public function testWiring(): void
     {
         $kernel = new MakerTestKernel('dev', true);
 
@@ -33,11 +33,19 @@ class FunctionalTest extends TestCase
             ->in(__DIR__.'/../../src/Maker')
             // exclude deprecated classes
             ->notContains('/@deprecated/')
+            // exclude Maker/Common/ as no maker's should live in this dir
+            ->notPath('Common')
         ;
 
         $application = new Application($kernel);
         foreach ($finder as $file) {
-            $maker = new \ReflectionClass(sprintf('Symfony\Bundle\MakerBundle\Maker\%s', $file->getBasename('.php')));
+            $classNameFromPath = str_replace(
+                ['/', '.php'], // We need to flip and "/" to "\" and remove ".php"
+                ['\\', ''],
+                sprintf('Symfony\Bundle\MakerBundle\Maker\%s', $file->getRelativePathname())
+            );
+
+            $maker = new \ReflectionClass($classNameFromPath);
 
             if ($maker->isAbstract()) {
                 continue;

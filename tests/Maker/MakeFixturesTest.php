@@ -22,7 +22,7 @@ class MakeFixturesTest extends MakerTestCase
         return MakeFixtures::class;
     }
 
-    public function getTestDetails()
+    public function getTestDetails(): \Generator
     {
         yield 'it_generates_fixtures' => [$this->createMakerTest()
             ->run(function (MakerTestRunner $runner) {
@@ -30,7 +30,7 @@ class MakeFixturesTest extends MakerTestCase
                     'FooFixtures',
                 ]);
 
-                $this->assertStringContainsString('created: src/DataFixtures/FooFixtures.php', $output);
+                $this->assertStringContainsString('src/DataFixtures/FooFixtures.php', $output);
             }),
         ];
     }

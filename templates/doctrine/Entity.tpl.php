@@ -44,8 +44,8 @@ class <?= $class_name."\n" ?>
     }
 <?php else: ?>
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
     public function getId(): ?int

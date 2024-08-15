@@ -435,6 +435,8 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
 
             // set type according to user decision
             $classProperty->type = $io->confirm('Can this field store multiple enum values', false) ? 'simple_array' : 'string';
+        } elseif (in_array($type, ['bit', 'bit varying'])) {
+            $classProperty->length = (int)$io->ask('Bits count', 0);
         }
 
         if ($io->confirm('Can this field be null in the database (nullable)', false)) {
@@ -627,7 +629,7 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                 ),
             ]);
 
-            return $io->confirm(\sprintf('Do you want to automatically delete orphaned <comment>%s</comment> objects (orphanRemoval)?', $owningClass), false);
+            return $io->confirm(\sprintf('Do you want to automatically delete orphaned <comment>%s</comment> objects (orphanRemoval)?', $owningClass), true);
         };
 
         $askInverseSide = function (EntityRelation $relation) use ($io) {
@@ -671,6 +673,10 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                     $relation->getOwningProperty(),
                     $relation->getOwningClass()
                 ));
+                if (!$relation->isNullable()) {
+                    $onDeleteCascade = $io->confirm(sprintf('Do you want to cascade delete inverse <comment>%s</comment> objects (cascade delete)?', $relation->getInverseClass()), true);
+                    $relation->setOnDeleteCascade($onDeleteCascade);
+                }
 
                 $askInverseSide($relation);
                 if ($relation->getMapInverseRelation()) {
@@ -717,6 +723,10 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                     $relation->getOwningProperty(),
                     $relation->getOwningClass()
                 ));
+                if (!$relation->isNullable()) {
+                    $onDeleteCascade = $io->confirm(sprintf('Do you want to cascade delete inverse <comment>%s</comment> objects (cascade delete)?', $relation->getInverseClass()), true);
+                    $relation->setOnDeleteCascade($onDeleteCascade);
+                }
 
                 if (!$relation->isNullable()) {
                     $relation->setOrphanRemoval($askOrphanRemoval(
@@ -760,6 +770,10 @@ final class MakeEntity extends AbstractMaker implements InputAwareMakerInterface
                     $relation->getOwningProperty(),
                     $relation->getOwningClass()
                 ));
+                if (!$relation->isNullable()) {
+                    $onDeleteCascade = $io->confirm(sprintf('Do you want to cascade delete inverse <comment>%s</comment> objects (cascade delete)?', $relation->getInverseClass()), true);
+                    $relation->setOnDeleteCascade($onDeleteCascade);
+                }
 
                 $askInverseSide($relation);
                 if ($relation->getMapInverseRelation()) {

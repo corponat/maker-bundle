@@ -119,7 +119,6 @@ final class EntityClassGenerator
         $useStatements = new UseStatementGenerator([
             $entityClass,
             ManagerRegistry::class,
-            ServiceEntityRepository::class,
         ]);
 
         if ($withPasswordUpgrade) {
